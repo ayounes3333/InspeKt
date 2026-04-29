@@ -1,4 +1,4 @@
-name: Build Desktop Installers
+name: Build and Release
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write      # Needed to create GitHub Releases
 
 jobs:
-  build:
+  build-desktop:
     strategy:
       matrix:
         include:
@@ -26,6 +26,10 @@ jobs:
             task: packageDmg
             artifact: "composeApp/build/compose/binaries/main/dmg/*.dmg"
             name: macos-dmg
+          - os: macos-latest
+            task: packagePkg
+            artifact: "composeApp/build/compose/binaries/main/pkg/*.pkg"
+            name: macos-pkg
           - os: windows-latest
             task: packageMsi
             artifact: "composeApp/build/compose/binaries/main/msi/*.msi"
@@ -70,9 +74,36 @@ jobs:
           path: ${{ matrix.artifact }}
           if-no-files-found: error
 
-  # ── Optional: create a GitHub Release when a tag is pushed ──
+  build-android:
+    runs-on: ubuntu-latest
+    name: android-apk
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Android release APK
+        run: ./gradlew :composeApp:assembleRelease
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: composeApp/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+  # ── Create a GitHub Release when a tag is pushed ──
   release:
-    needs: build
+    needs: [build-desktop, build-android]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
