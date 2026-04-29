@@ -64,7 +64,58 @@ composeApp/
 ### Build desktop distribution
 
 ```bash
+# Build installer for the current OS (auto-detects platform)
 ./gradlew :composeApp:packageDistributionForCurrentOS
+```
+
+#### Platform-specific installers
+
+| Platform | Format | Command |
+|---|---|---|
+| **Linux** | `.deb` (Debian/Ubuntu) | `./gradlew :composeApp:packageDeb` |
+| **Linux** | `.rpm` (Fedora/RHEL) | `./gradlew :composeApp:packageRpm` |
+| **macOS** | `.dmg` | `./gradlew :composeApp:packageDmg` |
+| **macOS** | `.pkg` | `./gradlew :composeApp:packagePkg` |
+| **Windows** | `.msi` | `./gradlew :composeApp:packageMsi` |
+| **Windows** | `.exe` | `./gradlew :composeApp:packageExe` |
+
+> **Cross-compilation is not supported** — each installer can only be built on
+> its native OS (e.g. `.msi`/`.exe` on Windows, `.dmg` on macOS). A **GitHub
+> Actions CI workflow** (`.github/workflows/build-installers.yml`) builds all
+> platforms in parallel so you don't need access to every OS yourself.
+
+Built installers are output to: `composeApp/build/compose/binaries/main/`
+
+#### CI / GitHub Actions
+
+All installers are built automatically when you push a version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This triggers the workflow which:
+1. Builds `.deb` and `.rpm` on Linux, `.dmg` on macOS, `.msi` and `.exe` on Windows — all in parallel
+2. Uploads every installer as a GitHub Actions artifact
+3. Creates a **GitHub Release** with all installers attached
+
+You can also trigger the workflow manually from the **Actions** tab.
+
+#### Release build (with ProGuard optimization)
+
+```bash
+./gradlew :composeApp:packageReleaseDistributionForCurrentOS
+```
+
+#### JDK requirement for packaging
+
+Packaging requires a full JDK 17+ with `jpackage`. Android Studio's bundled
+JBR may not include it. Set `JPACKAGE_JDK` to point to a full JDK:
+
+```bash
+export JPACKAGE_JDK=/usr/lib/jvm/java-21-openjdk-amd64   # Linux example
+./gradlew :composeApp:packageDeb
 ```
 
 ## Collections Storage

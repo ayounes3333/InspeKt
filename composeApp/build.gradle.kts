@@ -100,14 +100,72 @@ compose.desktop {
     application {
         mainClass = "com.inspekt.MainKt"
 
+        buildTypes.release.proguard {
+            obfuscate.set(false)
+            optimize.set(true)
+        }
+
         nativeDistributions {
-            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Pkg,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Rpm,
+            )
+
+            // Use a full JDK that includes jpackage (Android Studio's JBR may lack it).
+            // CI sets JPACKAGE_JDK; locally fall back to JAVA_HOME or the running JDK.
+            javaHome = System.getenv("JPACKAGE_JDK")
+                ?: System.getenv("JAVA_HOME")
+                ?: System.getProperty("java.home")
+
             packageName = "InspeKt"
             packageVersion = "1.0.0"
-            description = "A Postman-like REST API client"
+            description = "A Postman-like REST API client for testing REST APIs"
             copyright = "© 2026 InspeKt"
+            vendor = "InspeKt"
+            licenseFile.set(project.file("../LICENSE"))
+
+            // ── JVM args applied inside the packaged app ──
+            jvmArgs += listOf(
+                "-Xmx512m",
+                "-Dfile.encoding=UTF-8",
+            )
+
+            // ── Linux ──
+            linux {
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+                debMaintainer = "inspekt@example.com"
+                menuGroup = "Development;IDE;"
+                appRelease = "1"
+                appCategory = "Development"
+                // DEB-specific
+                debPackageVersion = "1.0.0"
+                // RPM-specific
+                rpmLicenseType = "MIT"
+                rpmPackageVersion = "1.0.0"
+            }
+
+            // ── Windows ──
+            windows {
+                iconFile.set(project.file("src/desktopMain/resources/icon.ico"))
+                menuGroup = "InspeKt"
+                dirChooser = true
+                perUserInstall = true
+                shortcut = true
+                menu = true
+                upgradeUuid = "d4a7e3b0-8c1f-4e5a-9b2d-6f0e1a3c5b7d"
+            }
+
+            // ── macOS ──
+            macOS {
+                iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
+                bundleID = "com.inspekt.app"
+                appCategory = "public.app-category.developer-tools"
+                dockName = "InspeKt"
+            }
         }
     }
 }

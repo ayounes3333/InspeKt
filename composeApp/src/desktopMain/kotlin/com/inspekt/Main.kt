@@ -1,5 +1,6 @@
 package com.inspekt
 
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.inspekt.di.appModule
@@ -14,7 +15,8 @@ fun main() {
     application {
         Window(
             onCloseRequest = ::exitApplication,
-            title = "InspeKt"
+            title = "InspeKt",
+            icon = painterResource("icon.png"),
         ) {
             KoinApplication(application = {
                 modules(appModule(storageDir))
