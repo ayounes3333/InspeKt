@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-desktop:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -61,11 +62,12 @@ jobs:
 
       # RPM builds need rpmbuild
       - name: Install rpmbuild (Linux RPM only)
-        if: matrix.name == 'linux-rpm'
+        if: runner.os == 'Linux' && contains(matrix.task, 'Rpm')
         run: sudo apt-get update && sudo apt-get install -y rpm
 
       - name: Build ${{ matrix.name }}
-        run: ./gradlew :composeApp:${{ matrix.task }}
+        shell: bash
+        run: ./gradlew :composeApp:${{ matrix.task }} --stacktrace
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
