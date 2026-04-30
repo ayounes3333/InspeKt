@@ -121,6 +121,11 @@ compose.desktop {
                 ?: System.getenv("JAVA_HOME")
                 ?: System.getProperty("java.home")
 
+            // Include JDK modules required at runtime (ktor-client-java needs java.net.http).
+            // Without this, jlink strips the module from the bundled runtime and the app
+            // fails on launch with NoClassDefFoundError: java/net/http/HttpClient$Version.
+            modules("java.net.http", "java.sql", "java.naming", "jdk.unsupported")
+
             packageName = "InspeKt"
             packageVersion = "1.0.0"
             description = "A Postman-like REST API client for testing REST APIs"
