@@ -127,7 +127,7 @@ compose.desktop {
             modules("java.net.http", "java.sql", "java.naming", "jdk.unsupported")
 
             packageName = "InspeKt"
-            packageVersion = "0.1.2"
+            packageVersion = "1.0.0"
             description = "A Postman-like REST API client for testing REST APIs"
             copyright = "© 2026 InspeKt"
             vendor = "InspeKt"
@@ -147,10 +147,10 @@ compose.desktop {
                 appRelease = "1"
                 appCategory = "Development"
                 // DEB-specific
-                debPackageVersion = "0.1.2"
+                debPackageVersion = "1.0.0"
                 // RPM-specific
                 rpmLicenseType = "MIT"
-                rpmPackageVersion = "0.1.2"
+                rpmPackageVersion = "1.0.0"
             }
 
             // ── Windows ──
