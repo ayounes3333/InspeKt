@@ -77,8 +77,8 @@ android {
         applicationId = "com.inspekt"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
     packaging {
         resources {
@@ -127,7 +127,7 @@ compose.desktop {
             modules("java.net.http", "java.sql", "java.naming", "jdk.unsupported")
 
             packageName = "InspeKt"
-            packageVersion = "1.0.0"
+            packageVersion = "1.1.0"
             description = "A Postman-like REST API client for testing REST APIs"
             copyright = "© 2026 InspeKt"
             vendor = "InspeKt"
@@ -147,10 +147,10 @@ compose.desktop {
                 appRelease = "1"
                 appCategory = "Development"
                 // DEB-specific
-                debPackageVersion = "1.0.0"
+                debPackageVersion = "1.1.0"
                 // RPM-specific
                 rpmLicenseType = "MIT"
-                rpmPackageVersion = "1.0.0"
+                rpmPackageVersion = "1.1.0"
             }
 
             // ── Windows ──
