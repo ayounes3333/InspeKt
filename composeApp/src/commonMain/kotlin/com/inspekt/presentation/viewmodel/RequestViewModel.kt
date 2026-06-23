@@ -2,9 +2,11 @@ package com.inspekt.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.inspekt.data.repository.EnvironmentRepository
 import com.inspekt.data.repository.HttpClientRepository
 import com.inspekt.domain.model.*
 import com.inspekt.util.CurlParser
+import com.inspekt.util.VariableInterpolator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,17 +20,36 @@ data class RequestUiState(
     val error: String? = null,
     val activeTab: RequestTab = RequestTab.PARAMS,
     val showCurlImportDialog: Boolean = false,
-    val curlInput: String = ""
-)
+    val curlInput: String = "",
+    val activeEnvironmentId: String? = null,
+    val environments: List<Environment> = emptyList()
+) {
+    val activeEnvironment: Environment?
+        get() = environments.firstOrNull { it.id == activeEnvironmentId }
+}
 
 enum class RequestTab { PARAMS, HEADERS, BODY, AUTH }
 
 class RequestViewModel(
-    private val httpRepository: HttpClientRepository
+    private val httpRepository: HttpClientRepository,
+    private val environmentRepository: EnvironmentRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RequestUiState())
     val uiState: StateFlow<RequestUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            environmentRepository.environments.collect { envs ->
+                _uiState.update { it.copy(environments = envs) }
+            }
+        }
+        viewModelScope.launch {
+            environmentRepository.activeEnvironmentId.collect { id ->
+                _uiState.update { it.copy(activeEnvironmentId = id) }
+            }
+        }
+    }
 
     fun loadRequest(request: HttpRequest) {
         _uiState.update { it.copy(request = request, response = null, error = null) }
@@ -150,9 +171,11 @@ class RequestViewModel(
         val req = _uiState.value.request
         if (req.url.isBlank()) return
 
+        val resolved = VariableInterpolator.resolveRequest(req, _uiState.value.activeEnvironment)
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, response = null) }
-            httpRepository.execute(req).fold(
+            httpRepository.execute(resolved).fold(
                 onSuccess = { response ->
                     _uiState.update { it.copy(isLoading = false, response = response) }
                 },
@@ -189,6 +212,14 @@ class RequestViewModel(
                 _uiState.update { it.copy(error = "cURL parse error: ${err.message}") }
             }
         )
+    }
+
+    // ── Environment ───────────────────────────────────────────────────────
+
+    fun setActiveEnvironment(environmentId: String?) {
+        viewModelScope.launch {
+            environmentRepository.setActive(environmentId)
+        }
     }
 
     // ── Reset ────────────────────────────────────────────────────────────────

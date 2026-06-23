@@ -5,5 +5,6 @@ package com.inspekt.presentation.navigation
  */
 enum class AppDestination {
     REQUEST,
-    COLLECTIONS
+    COLLECTIONS,
+    ENVIRONMENTS
 }

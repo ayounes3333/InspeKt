@@ -43,7 +43,8 @@ fun RequestScreen(
             onSend = vm::sendRequest,
             onNewRequest = vm::newRequest,
             onImportCurl = vm::showCurlImportDialog,
-            onSave = { onSaveToCollection(state.request) }
+            onSave = { onSaveToCollection(state.request) },
+            onEnvironmentChange = vm::setActiveEnvironment
         )
 
         HorizontalDivider()
@@ -108,9 +109,11 @@ private fun UrlBar(
     onSend: () -> Unit,
     onNewRequest: () -> Unit,
     onImportCurl: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onEnvironmentChange: (String?) -> Unit
 ) {
     var methodMenuExpanded by remember { mutableStateOf(false) }
+    var envMenuExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
         // Toolbar row
@@ -129,6 +132,34 @@ private fun UrlBar(
             TextButton(onClick = onNewRequest) { Text("New") }
             TextButton(onClick = onImportCurl) { Text("Import cURL") }
             TextButton(onClick = onSave) { Text("Save") }
+
+            // Environment selector
+            Box {
+                OutlinedButton(onClick = { envMenuExpanded = true }) {
+                    Text(state.activeEnvironment?.name ?: "No Environment")
+                }
+                DropdownMenu(
+                    expanded = envMenuExpanded,
+                    onDismissRequest = { envMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("No Environment") },
+                        onClick = {
+                            onEnvironmentChange(null)
+                            envMenuExpanded = false
+                        }
+                    )
+                    state.environments.forEach { environment ->
+                        DropdownMenuItem(
+                            text = { Text(environment.name) },
+                            onClick = {
+                                onEnvironmentChange(environment.id)
+                                envMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(8.dp))

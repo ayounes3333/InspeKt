@@ -104,3 +104,22 @@ data class PostmanVariable(
     val description: String = "",
     val disabled: Boolean = false
 )
+
+// ── Postman Environment Format v2.1 ─────────────────────────────────────────
+
+@Serializable
+data class PostmanEnvironment(
+    val id: String = "",
+    val name: String = "",
+    val values: List<PostmanEnvironmentVariable> = emptyList(),
+    @SerialName("_postman_variable_scope") val variableScope: String = "environment"
+)
+
+@Serializable
+data class PostmanEnvironmentVariable(
+    val key: String = "",
+    val value: String = "",
+    val enabled: Boolean = true,
+    val type: String = "default",
+    val description: String = ""
+)
